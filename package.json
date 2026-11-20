@@ -4,13 +4,14 @@
   "description": "",
   "main": "index.js",
   "type": "module",
- "scripts": {
-  "dev": "tsx watch src/server.ts",
-  "build": "tsc",
-  "start": "node dist/server.js"
-},
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
   "keywords": [],
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^26.6.6",
     "prisma": "^7.10.1",
     "tsx": "^4.23.15",
