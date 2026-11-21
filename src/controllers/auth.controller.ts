@@ -1,10 +1,12 @@
+
 import { Request, Response, NextFunction } from "express";
-import { registerUser } from "../services/auth.services.js";
+import { registerUser, loginUser } from "../services/auth.services.js";
+import { env } from "../config/env.js";
 
 export const registerController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = await registerUser(req.body);
@@ -27,6 +29,42 @@ export const registerController = async (
       });
     }
 
+    return next(error);
+  }
+};
+
+export const loginController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { user, accessToken, refreshToken } = await loginUser(req.body);
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+      path : "/"
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/api/auth",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
     return next(error);
   }
 };

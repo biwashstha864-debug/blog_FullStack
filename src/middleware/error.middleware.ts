@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { AppError } from "../utils/app-error.js";
 
 export const errorHandler = (
   error: unknown,
@@ -11,6 +12,13 @@ export const errorHandler = (
   if (res.headersSent) {
     return next(error);
   }
+  
+  if (error instanceof AppError) {
+  return res.status(error.statusCode).json({
+    success: false,
+    message: error.message,
+  });
+}
 
   if (
     typeof error === "object" &&
