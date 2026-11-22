@@ -8,6 +8,7 @@ import { errorHandler } from "./middleware/error.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
 
 
+
 const app = express();
 
 app.use(helmet());

@@ -83,3 +83,27 @@ export const loginUser = async (data: LoginInput) => {
     refreshToken,
   };
 };
+
+export const getMe = async (userId: number) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      email: true,
+      bio: true,
+      avatarUrl: true,
+      role: true,
+      createdAt: true,
+    },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  return user;
+};

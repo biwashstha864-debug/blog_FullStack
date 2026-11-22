@@ -1,6 +1,10 @@
 
 import { Request, Response, NextFunction } from "express";
-import { registerUser, loginUser } from "../services/auth.services.js";
+import {
+  registerUser,
+  loginUser,
+  getMe,
+} from "../services/auth.services.js";
 import { env } from "../config/env.js";
 
 export const registerController = async (
@@ -57,9 +61,34 @@ export const loginController = async (
       path: "/api/auth",
     });
 
+    
+
     return res.status(200).json({
       success: true,
       message: "Login successful",
+      data: {
+        user,
+      },
+    });
+
+    
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+export const getMeController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const user = await getMe(req.user!.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "User retrieved successfully",
       data: {
         user,
       },
