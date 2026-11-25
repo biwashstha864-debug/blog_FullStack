@@ -4,6 +4,8 @@ import { AppError } from "../utils/app-error.js";
 import { generateAccessToken, generateRefreshToken,verifyRefreshToken } from "../utils/jwt.js";
 import { randomUUID } from "node:crypto";
 import { hashToken } from "../utils/token-hash.js";
+import jwt from "jsonwebtoken";
+import {RefreshTokenPayload} from "../utils/jwt.js";
 
 interface RegisterInput {
   name: string;
@@ -199,4 +201,42 @@ return {
   accessToken: newAccessToken,
   refreshToken: newRefreshToken,
 };
+};
+
+export const logoutUser = async (token: string) => {
+  let decoded: RefreshTokenPayload;
+
+  try {
+    decoded = verifyRefreshToken(token);
+  } catch (error) {
+    if (
+      error instanceof jwt.TokenExpiredError ||
+      error instanceof jwt.JsonWebTokenError ||
+      (error instanceof AppError && error.statusCode === 401)
+    ) {
+      return;
+    }
+
+    throw error;
+  }
+
+  const session = await prisma.session.findFirst({
+    where: {
+      id: decoded.sessionId,
+      userId: decoded.userId,
+    },
+  });
+
+  if (!session || session.revokedAt) {
+    return;
+  }
+
+  await prisma.session.update({
+    where: {
+      id: session.id,
+    },
+    data: {
+      revokedAt: new Date(),
+    },
+  });
 };

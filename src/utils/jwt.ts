@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 import { AppError } from "./app-error.js";
 
-interface RefreshTokenPayload {
+export interface RefreshTokenPayload {
   userId: number;
   sessionId: string;
   tokenType: "refresh";
