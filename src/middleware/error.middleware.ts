@@ -3,7 +3,7 @@ import { AppError } from "../utils/app-error.js";
 
 export const errorHandler = (
   error: unknown,
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction
 ) => {

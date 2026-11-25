@@ -4,8 +4,10 @@ import {
   registerUser,
   loginUser,
   getMe,
+  refreshUserSession
 } from "../services/auth.services.js";
 import { env } from "../config/env.js";
+import { AppError } from "../utils/app-error.js";
 
 export const registerController = async (
   req: Request,
@@ -92,6 +94,47 @@ export const getMeController = async (
       data: {
         user,
       },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+export const refreshController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+      throw new AppError("Refresh token required", 401);
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      await refreshUserSession(refreshToken);
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+      path: "/",
+    });
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/api/auth",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Tokens refreshed successfully",
     });
   } catch (error) {
     return next(error);

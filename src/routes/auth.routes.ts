@@ -5,6 +5,7 @@ import {
   registerController,
   loginController,
   getMeController,
+  refreshController,
 } from "../controllers/auth.controller.js";
 import { authRateLimiter } from "../middleware/auth-rate-limit.middleware.js";
 import { loginSchema } from "../validators/auth.validator.js";
@@ -22,5 +23,7 @@ router.post(
 router.post("/login", authRateLimiter, validate(loginSchema), loginController);
 
 router.get("/me", authenticate, getMeController);
+
+router.post("/refresh", authRateLimiter, refreshController);
 
 export default router;
