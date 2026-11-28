@@ -10,6 +10,7 @@ import {
   getMeController,
   refreshController,
   logoutController,
+  logoutAllController
 } from "../controllers/auth.controller.js";
 import { authRateLimiter } from "../middleware/auth-rate-limit.middleware.js";
 import { authenticate } from "../middleware/authenticate.middleware.js";
@@ -34,6 +35,11 @@ router.post("/refresh", authRateLimiter, refreshController);
 
 router.post("/logout", logoutController);
 
+router.post("/logout-all", authenticate, logoutAllController);
+
+
 router.get("/me", authenticate, getMeController);
+
+
 
 export default router;

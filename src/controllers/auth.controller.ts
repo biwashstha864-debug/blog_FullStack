@@ -6,6 +6,7 @@ import {
   getMe,
   refreshUserSession,
   logoutUser,
+  logoutAllSessions,
 } from "../services/auth.services.js";
 import { env } from "../config/env.js";
 import { AppError } from "../utils/app-error.js";
@@ -171,6 +172,38 @@ export const logoutController = async (
     return res.status(200).json({
       success: true,
       message: "Logged out successfully",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+export const logoutAllController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    await logoutAllSessions(req.user!.id);
+
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/api/auth",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out from all devices successfully",
     });
   } catch (error) {
     return next(error);
