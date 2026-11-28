@@ -7,6 +7,7 @@ import {
   refreshUserSession,
   logoutUser,
   logoutAllSessions,
+  changePassword,
 } from "../services/auth.services.js";
 import { env } from "../config/env.js";
 import { AppError } from "../utils/app-error.js";
@@ -204,6 +205,45 @@ export const logoutAllController = async (
     return res.status(200).json({
       success: true,
       message: "Logged out from all devices successfully",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+
+export const changePasswordController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    await changePassword(
+      req.user!.id,
+      currentPassword,
+      newPassword,
+    );
+
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/api/auth",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully. Please log in again.",
     });
   } catch (error) {
     return next(error);

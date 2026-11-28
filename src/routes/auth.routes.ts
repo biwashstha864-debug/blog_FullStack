@@ -3,6 +3,7 @@ import { validate } from "../middleware/validate.middleware.js";
 import {
   registerSchema,
   loginSchema,
+  changePasswordSchema,
 } from "../validators/auth.validator.js";
 import {
   registerController,
@@ -10,7 +11,8 @@ import {
   getMeController,
   refreshController,
   logoutController,
-  logoutAllController
+  logoutAllController,
+  changePasswordController,
 } from "../controllers/auth.controller.js";
 import { authRateLimiter } from "../middleware/auth-rate-limit.middleware.js";
 import { authenticate } from "../middleware/authenticate.middleware.js";
@@ -36,6 +38,13 @@ router.post("/refresh", authRateLimiter, refreshController);
 router.post("/logout", logoutController);
 
 router.post("/logout-all", authenticate, logoutAllController);
+
+router.patch(
+  "/change-password",
+  authenticate,
+  validate(changePasswordSchema),
+  changePasswordController,
+);
 
 
 router.get("/me", authenticate, getMeController);

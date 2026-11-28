@@ -1,4 +1,13 @@
+
 import { z } from "zod";
+
+const passwordSchema = z
+  .string()
+  .min(12, "Password must contain at least 12 characters")
+  .refine(
+    (password) => Buffer.byteLength(password, "utf8") <= 72,
+    "Password must not exceed 72 bytes"
+  );
 
 export const registerSchema = z.object({
   name: z
@@ -25,15 +34,8 @@ export const registerSchema = z.object({
     .email("Please provide a valid email address")
     .max(254, "Email is too long"),
 
-password: z
-  .string()
-  .min(12, "Password must contain at least 12 characters")
-  .refine(
-    (password) => Buffer.byteLength(password, "utf8") <= 72,
-    "Password must not exceed 72 bytes"
-  ),
-    });
-
+  password: passwordSchema,
+});
 
 export const loginSchema = z.object({
   email: z
@@ -46,3 +48,23 @@ export const loginSchema = z.object({
     .string()
     .min(1, "Password is required"),
 });
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(1, "Current password is required"),
+
+    newPassword: passwordSchema,
+
+    confirmPassword: z
+      .string()
+      .min(1, "Please confirm your new password"),
+  })
+  .refine(
+    (data) => data.newPassword === data.confirmPassword,
+    {
+      message: "New password and confirmation do not match",
+      path: ["confirmPassword"],
+    }
+  );

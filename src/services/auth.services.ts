@@ -253,3 +253,60 @@ export const logoutAllSessions = async (userId: number) => {
     },
   });
 };
+
+
+
+export const changePassword = async (
+  userId: number,
+  currentPassword: string,
+  newPassword: string,
+) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const isPasswordValid = await bcrypt.compare(
+    currentPassword,
+    user.passwordHash,
+  );
+
+  if (!isPasswordValid) {
+    throw new AppError("Current password is incorrect", 401);
+  }
+
+  if (currentPassword === newPassword) {
+    throw new AppError(
+      "New password must be different from current password",
+      400,
+    );
+  }
+
+  const newPasswordHash = await bcrypt.hash(newPassword, 12);
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        passwordHash: newPasswordHash,
+      },
+    }),
+
+    prisma.session.updateMany({
+      where: {
+        userId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    }),
+  ]);
+};
